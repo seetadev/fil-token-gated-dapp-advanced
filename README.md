@@ -1,2 +1,2 @@
-# fil-token-gated-dapp-advanced
-Advanced workflows for token gated dapp access on Filecoin with a custom token
+# web3-medical-invoice-token-gated
+Web3 Medical Invoice - token gated features
