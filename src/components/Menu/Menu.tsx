@@ -88,7 +88,7 @@ const Menu: React.FC<{
   };
 
   const fetchUserTokens = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum as any);
     const signer = provider.getSigner();
     const { mediInvoice } = await getContractAddresses(provider);
     
@@ -103,7 +103,7 @@ const Menu: React.FC<{
   };
 
   const updateTokenBalance = async (operation: 'SAVE' | 'SAVE_AS' | 'PRINT' | 'EMAIL') => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum as any);
     const signer = provider.getSigner();
     const { mediToken, mediInvoice } = await getContractAddresses(provider);
 
