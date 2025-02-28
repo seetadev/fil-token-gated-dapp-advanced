@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import * as AppGeneral from "../socialcalc/index.js";
-import { File, Local } from "../Storage/LocalStorage";
+import { Files, Local } from "../Storage/LocalStorage";
 import { DATA } from "../../app-data.js";
 import { IonAlert, IonIcon } from "@ionic/react";
 import { add } from "ionicons/icons";
@@ -16,7 +16,7 @@ const NewFile: React.FC<{
     if (props.file !== "default") {
       const content = encodeURIComponent(AppGeneral.getSpreadsheetContent());
       const data = props.store._getFile(props.file);
-      const file = new File(
+      const file = new Files(
         (data as any).created,
         new Date().toString(),
         content,

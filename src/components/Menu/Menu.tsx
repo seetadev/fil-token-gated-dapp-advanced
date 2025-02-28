@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as AppGeneral from "../socialcalc/index.js";
-import { File, Local } from "../Storage/LocalStorage";
+import { Files, Local } from "../Storage/LocalStorage.js";
 import { isPlatform, IonToast } from "@ionic/react";
 import { EmailComposer } from "capacitor-email-composer";
 import { Printer } from "@ionic-native/printer";
@@ -14,8 +14,9 @@ import {
   MEDI_INVOICE_ADDRESSES, 
   SUPPORTED_NETWORKS, 
   TOKEN_COST 
-} from "../../utils/constants";
+} from "../../utils/constants.js";
 import meditokenabi from "../../utils/meditokenabi.json";
+import { create } from "@web3-storage/w3up-client";
 
 const Menu: React.FC<{
   showM: boolean;
@@ -87,6 +88,25 @@ const Menu: React.FC<{
     };
   };
 
+  const uploadToIPFS = async (fileData) => {
+    try {
+      const client = await create();
+      const account = await client.login('chaitutatipamula023@gmail.com');
+      await client.setCurrentSpace('did:key:z6MkvMYPfaAz29PPqqe3JoGa1MEQGnNGjyfszBgZbGt6t2QT');
+      const formattedFile = new File(
+        [JSON.stringify(fileData)],
+        `${fileData.name}.json`,
+        { type: 'application/json' }
+      );
+      console.log(formattedFile);
+      const cid = await client.uploadDirectory([formattedFile]);
+      return cid.toString();
+    } catch (error) {
+      console.error('IPFS Upload Error:', error);
+      throw error;
+    }
+  };
+
   const fetchUserTokens = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum as any);
     const signer = provider.getSigner();
@@ -133,7 +153,7 @@ const Menu: React.FC<{
     } catch (e) {
       console.log("Error getting user tokens: ", e);
     }
-  }, []);
+  }, [numOfTokens]);
 
   const doPrint = async () => {
     if (numOfTokens < Number(TOKEN_COST.PRINT)) {
@@ -172,7 +192,7 @@ const Menu: React.FC<{
       await updateTokenBalance('SAVE');
       const content = encodeURIComponent(AppGeneral.getSpreadsheetContent());
       const data = props.store._getFile(props.file);
-      const file = new File(
+      const file = new Files(
         (data as any).created,
         new Date().toString(),
         content,
@@ -189,26 +209,39 @@ const Menu: React.FC<{
 
   const doSaveAs = async (filename) => {
     if (!filename) return;
-
+  
     if (numOfTokens < Number(TOKEN_COST.SAVE_AS)) {
       alert(`You need at least ${TOKEN_COST.SAVE_AS} MediToken to save`);
       return;
     }
-
+  
     if (await _validateName(filename)) {
       try {
-        await updateTokenBalance('SAVE_AS');
-        const content = encodeURIComponent(AppGeneral.getSpreadsheetContent());
-        const file = new File(
-          new Date().toString(),
-          new Date().toString(),
-          content,
-          filename,
-          props.bT
-        );
-        props.store._saveFile(file);
-        props.updateSelectedFile(filename);
-        setShowAlert4(true);
+        const content = AppGeneral.getSpreadsheetContent();
+          const fileData = {
+            name: filename,
+            content: content,
+            created: new Date().toString(),
+            modified: new Date().toString()
+          };
+
+          // Upload to IPFS
+          const cid = await uploadToIPFS(fileData);
+
+          // Save the CID reference locally
+          const file = new Files(
+            new Date().toString(),
+            new Date().toString(),
+            content,
+            filename,
+            props.bT
+          );
+          props.store._saveFile(file);
+          props.updateSelectedFile(filename);
+          setShowAlert4(true);
+          window.alert(`File ${filename} saved successfully! IPFS CID: ${cid} `);
+
+  
       } catch (error) {
         alert("Failed to process token payment");
       }

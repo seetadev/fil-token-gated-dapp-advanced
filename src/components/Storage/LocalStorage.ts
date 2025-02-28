@@ -1,6 +1,6 @@
 import { Preferences } from "@capacitor/preferences";
 
-export class File {
+export class Files {
   created: string;
   modified: string;
   name: string;
@@ -23,7 +23,7 @@ export class File {
 }
 
 export class Local {
-  _saveFile = async (file: File) => {
+  _saveFile = async (file: Files) => {
     let data = {
       created: file.created,
       modified: file.modified,
